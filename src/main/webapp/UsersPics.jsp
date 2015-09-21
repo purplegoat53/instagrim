@@ -17,7 +17,7 @@
     <body>
         <header>
         
-        <h1>InstaGrim ! </h1>
+        <h1>InstaGrim!</h1>
         <h2>Your world in Black and White</h2>
         </header>
         
@@ -36,16 +36,16 @@
         %>
         <p>No Pictures found</p>
         <%
-        } else {
-            Iterator<Pic> iterator;
-            iterator = lsPics.iterator();
-            while (iterator.hasNext()) {
-                Pic p = (Pic) iterator.next();
+            } else {
+                Iterator<Pic> iterator;
+                iterator = lsPics.iterator();
+                while (iterator.hasNext()) {
+                    Pic p = (Pic) iterator.next();
 
         %>
         <a href="/Instagrim/Image/<%=p.getSUUID()%>" ><img src="/Instagrim/Thumb/<%=p.getSUUID()%>"></a><br/><%
 
-            }
+                }
             }
         %>
         </article>
