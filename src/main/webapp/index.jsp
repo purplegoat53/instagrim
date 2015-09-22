@@ -4,48 +4,19 @@
     Author     : Administrator
 --%>
 
-
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
-<%@page import="uk.ac.dundee.computing.aec.instagrim.stores.*" %>
 <!DOCTYPE html>
 <html>
     <head>
         <title>InstaGrim</title>
-        <link rel="stylesheet" type="text/css" href="Styles.css" />
+        <link rel="stylesheet" type="text/css" href="/Instagrim/styles.css" />
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     </head>
     <body>
-        <header>
-            <h1>InstaGrim</h1>
-            <h2>Your world in Black and White</h2>
-        </header>
-        <nav>
-            <ul>
-                <li><a href="upload.jsp">Upload</a></li>
-                <%
-                        LoggedIn lg = (LoggedIn) session.getAttribute("LoggedIn");
-                        if (lg != null) {
-                            if (lg.getLoginState()) {
-                %>
-                <li><a href="/Instagrim/Images/<%=lg.getUsername()%>">Your Images</a></li>
-                <%          }
-                        } else {
-                %>
-                <li><a href="register.jsp">Register</a></li>
-                <li><a href="login.jsp">Login</a></li>
-                <%
-                        }
-                %>
-            </ul>
-        </nav>
+        <%@include file="header.jsp"%>
         <main>
             this is the main....
         </main>
-        <footer>
-            <ul>
-                <li class="footer"><a href="/Instagrim">Home</a></li>
-                <li>&COPY;Andy C & purplegoat53</li>
-            </ul>
-        </footer>
+        <%@include file="footer.jsp"%>
     </body>
 </html>

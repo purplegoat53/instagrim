@@ -98,7 +98,7 @@ public class Image extends HttpServlet {
         PicModel tm = new PicModel();
         tm.setCluster(cluster);
         java.util.LinkedList<Pic> lsPics = tm.getPicsForUser(User);
-        RequestDispatcher rd = request.getRequestDispatcher("/UsersPics.jsp");
+        RequestDispatcher rd = request.getRequestDispatcher("/userspics.jsp");
         request.setAttribute("Pics", lsPics);
         rd.forward(request, response);
 
@@ -109,7 +109,7 @@ public class Image extends HttpServlet {
         tm.setCluster(cluster);
   
         
-        Pic p = tm.getPic(type,java.util.UUID.fromString(Image));
+        Pic p = tm.getPic(type, java.util.UUID.fromString(Image));
         
         OutputStream out = response.getOutputStream();
 
@@ -157,12 +157,10 @@ public class Image extends HttpServlet {
     }
 
     private void error(String mess, HttpServletResponse response) throws ServletException, IOException {
-
         PrintWriter out = null;
         out = new PrintWriter(response.getOutputStream());
         out.println("<h1>You have a na error in your input</h1>");
         out.println("<h2>" + mess + "</h2>");
         out.close();
-        return;
     }
 }
