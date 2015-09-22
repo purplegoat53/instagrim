@@ -8,9 +8,57 @@ and open the template in the editor.
     Author     : Administrator
 */
 
+header {
+    margin: 20px;
+}
+
+header h1 {
+    padding: 0px;
+    margin: 0px;
+}
+
+header h2 {
+    font-size: 12px;
+    
+    padding: 0px;
+    margin: 0px;
+}
+
+footer ul li {
+    display: inline;
+    margin: 5px;
+}
+
+footer {
+    text-align: center;
+}
+
+footer ul {
+    padding: 0px;
+}
 
 nav {
+    display: inline-block;
     text-align: left;
     border: 2px;
-    float: right;
+}
+
+nav ul {
+    margin: 20px;
+    padding: 0px;
+}
+
+main {
+    vertical-align: top;
+    display: inline-block;
+    padding: 20px;
+}
+
+a {
+    color: graytext;
+    text-decoration: none;
+}
+
+a:hover {
+    color: black;
 }

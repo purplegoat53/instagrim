@@ -10,13 +10,13 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>Instagrim</title>
+        <title>InstaGrim</title>
         <link rel="stylesheet" type="text/css" href="Styles.css" />
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     </head>
     <body>
         <header>
-            <h1>InstaGrim ! </h1>
+            <h1>InstaGrim</h1>
             <h2>Your world in Black and White</h2>
         </header>
         <nav>
@@ -38,10 +38,13 @@
                 %>
             </ul>
         </nav>
+        <main>
+            this is the main....
+        </main>
         <footer>
             <ul>
                 <li class="footer"><a href="/Instagrim">Home</a></li>
-                <li>&COPY; Andy C</li>
+                <li>&COPY;Andy C & purplegoat53</li>
             </ul>
         </footer>
     </body>
