@@ -18,18 +18,14 @@ import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
-import com.datastax.driver.core.utils.Bytes;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.util.Date;
-import java.util.LinkedList;
 import javax.imageio.ImageIO;
 import static org.imgscalr.Scalr.*;
 import org.imgscalr.Scalr.Method;
@@ -64,10 +60,10 @@ public class PicModel {
             FileOutputStream output = new FileOutputStream(new File("/var/tmp/instagrim/" + picid));
 
             output.write(b);
-            byte []  thumbb = picresize(picid.toString(),types[1]);
+            byte []  thumbb = resizePic(picid.toString(),types[1]);
             int thumblength= thumbb.length;
             ByteBuffer thumbbuf=ByteBuffer.wrap(thumbb);
-            byte[] processedb = picdecolour(picid.toString(),types[1]);
+            byte[] processedb = decolourPic(picid.toString(),types[1]);
             ByteBuffer processedbuf=ByteBuffer.wrap(processedb);
             int processedlength=processedb.length;
             Session session = cluster.connect("instagrim");
@@ -78,7 +74,7 @@ public class PicModel {
             BoundStatement bsInsertPicToUser = new BoundStatement(psInsertPicToUser);
 
             Date DateAdded = new Date();
-            session.execute(bsInsertPic.bind(picid, buffer, thumbbuf,processedbuf, user, DateAdded, length,thumblength,processedlength, type, name));
+            session.execute(bsInsertPic.bind(picid, buffer, thumbbuf, processedbuf, user, DateAdded, length, thumblength, processedlength, type, name));
             session.execute(bsInsertPicToUser.bind(picid, user, DateAdded));
             session.close();
 
@@ -86,8 +82,38 @@ public class PicModel {
             System.out.println("Error --> " + ex);
         }
     }
+    
+    public void removePic(java.util.UUID picid, String user) {
+        ResultSet rs;
+        Session session = cluster.connect("instagrim");
+        try {
+            PreparedStatement psGetPicUser = session.prepare("select user, interaction_time from pics where picid=?");
+            BoundStatement bsGetPicUser = new BoundStatement(psGetPicUser);
+            rs = session.execute(bsGetPicUser.bind(picid));
+            if(rs.isExhausted()) {
+                return; //TODO: proper error reporting
+            }
 
-    public byte[] picresize(String picid,String type) {
+            // there shouldn't be more than one
+            Row row = rs.one();
+            String actual_user = row.getString("user");
+            if(!actual_user.equals(user)) {
+                return;
+            }
+
+            PreparedStatement psDeletePic = session.prepare("delete from pics where picid=?");
+            PreparedStatement psDeletePicFromUser = session.prepare("delete from userpiclist where user=? and pic_added=?");
+            BoundStatement bsDeletePic = new BoundStatement(psDeletePic);
+            BoundStatement bsDeletePicFromUser = new BoundStatement(psDeletePicFromUser);
+
+            session.execute(bsDeletePic.bind(picid));
+            session.execute(bsDeletePicFromUser.bind(user, row.getDate("interaction_time")));
+        } finally {
+            session.close();
+        }
+    }
+
+    public byte[] resizePic(String picid, String type) {
         try {
             BufferedImage BI = ImageIO.read(new File("/var/tmp/instagrim/" + picid));
             BufferedImage thumbnail = createThumbnail(BI);
@@ -104,7 +130,7 @@ public class PicModel {
         return null;
     }
     
-    public byte[] picdecolour(String picid,String type) {
+    public byte[] decolourPic(String picid, String type) {
         try {
             BufferedImage BI = ImageIO.read(new File("/var/tmp/instagrim/" + picid));
             BufferedImage processed = createProcessed(BI);
@@ -115,7 +141,7 @@ public class PicModel {
             baos.close();
             return imageInByte;
         } catch (IOException et) {
-
+            
         }
         return null;
     }
@@ -151,7 +177,6 @@ public class PicModel {
                 System.out.println("UUID" + UUID.toString());
                 pic.setUUID(UUID);
                 Pics.add(pic);
-
             }
         }
         return Pics;
@@ -168,7 +193,6 @@ public class PicModel {
             PreparedStatement ps = null;
          
             if (image_type == Convertors.DISPLAY_IMAGE) {
-                
                 ps = session.prepare("select image,imagelength,type from pics where picid =?");
             } else if (image_type == Convertors.DISPLAY_THUMB) {
                 ps = session.prepare("select thumb,imagelength,thumblength,type from pics where picid =?");

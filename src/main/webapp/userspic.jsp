@@ -1,7 +1,7 @@
 <%-- 
-    Document   : upload
-    Created on : Sep 22, 2014, 6:31:50 PM
-    Author     : Administrator
+    Document   : userspic
+    Created on : 22-Sep-2015, 17:30:03
+    Author     : owner
 --%>
 
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
@@ -14,13 +14,10 @@
     </head>
     <body>
         <%@include file="header.jsp"%>
+        <% String picid = (String)request.getAttribute("PicID"); %>
         <main>
-            <h3>File Upload</h3>
-            <form method="POST" enctype="multipart/form-data" action="Image">
-                File to upload: <input type="file" name="upfile"><br>
-                <br>
-                <input type="submit" value="Upload">
-            </form>
+            <img src="/Instagrim/ImageData/<%= picid %>" width=100%><br>
+            <a href="/Instagrim/Image/<%= picid %>/Delete">Delete</a> ...
         </main>
         <%@include file="footer.jsp"%>
     </body>

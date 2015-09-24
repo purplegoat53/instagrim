@@ -18,10 +18,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.servlet.http.Part;
-import org.apache.commons.fileupload.FileItemIterator;
-import org.apache.commons.fileupload.FileItemStream;
-import org.apache.commons.fileupload.servlet.ServletFileUpload;
-import org.apache.commons.fileupload.util.Streams;
 import uk.ac.dundee.computing.aec.instagrim.lib.CassandraHosts;
 import uk.ac.dundee.computing.aec.instagrim.lib.Convertors;
 import uk.ac.dundee.computing.aec.instagrim.models.PicModel;
@@ -32,11 +28,13 @@ import uk.ac.dundee.computing.aec.instagrim.stores.Pic;
  * Servlet implementation class Image
  */
 @WebServlet(urlPatterns = {
-    "/Image",
-    "/Image/*",
-    "/Thumb/*",
+    "/ImageData",
+    "/ImageData/*",
+    "/ThumbData/*",
     "/Images",
-    "/Images/*"
+    "/Images/*",
+    "/Image",
+    "/Image/*"
 })
 @MultipartConfig
 
@@ -45,8 +43,6 @@ public class Image extends HttpServlet {
     private static final long serialVersionUID = 1L;
     private Cluster cluster;
     private HashMap CommandsMap = new HashMap();
-    
-    
 
     /**
      * @see HttpServlet#HttpServlet()
@@ -54,10 +50,10 @@ public class Image extends HttpServlet {
     public Image() {
         super();
         // TODO Auto-generated constructor stub
-        CommandsMap.put("Image", 1);
-        CommandsMap.put("Images", 2);
-        CommandsMap.put("Thumb", 3);
-
+        CommandsMap.put("ImageData", 1);
+        CommandsMap.put("ThumbData", 2);
+        CommandsMap.put("Images", 3);
+        CommandsMap.put("Image", 4);
     }
 
     public void init(ServletConfig config) throws ServletException {
@@ -70,27 +66,43 @@ public class Image extends HttpServlet {
      * response)
      */
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        // TODO Auto-generated method stub
         String args[] = Convertors.SplitRequestPath(request);
-        int command;
-        try {
-            command = (Integer) CommandsMap.get(args[1]);
-        } catch (Exception et) {
-            error("Bad Operator", response);
-            return;
+        if(args.length <= 1)
+            error("Not Enough Arguments", response);
+        
+        String imageCommand = args[1];
+        if(imageCommand.equals("ImageData"))
+            DisplayImageData(Convertors.DISPLAY_PROCESSED, args[2], response);
+        else if(imageCommand.equals("ThumbData"))
+            DisplayImageData(Convertors.DISPLAY_THUMB, args[2], response);
+        else if(imageCommand.equals("Images"))
+            DisplayImageList(args[2], request, response);
+        else if(imageCommand.equals("Image")) {
+            if(args.length > 3)
+                ManageImage(args[2], args[3], request, response);
+            else
+                DisplayImage(args[2], request, response);
+        } else
+            error("Bad Command", response);
+    }
+    
+    private void ManageImage(String image, String operation, HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        PicModel pm = new PicModel();
+        pm.setCluster(cluster);
+        
+        HttpSession session = request.getSession();
+        LoggedIn lg = (LoggedIn)session.getAttribute("LoggedIn");
+        if(lg == null || !lg.getLoginState())
+            error("Not Logged In", response);
+        
+        String user = lg.getUsername();
+        
+        if(operation.equals("Delete")) {
+            pm.removePic(java.util.UUID.fromString(image), user);
+            //TODO: inform user on error
         }
-        switch (command) {
-            case 1:
-                DisplayImage(Convertors.DISPLAY_PROCESSED,args[2], response);
-                break;
-            case 2:
-                DisplayImageList(args[2], request, response);
-                break;
-            case 3:
-                DisplayImage(Convertors.DISPLAY_THUMB,args[2],  response);
-                break;
-            default:
-                error("Bad Operator", response);
+        if(operation.equals("test")) {
+            response.getWriter().write("YOLO");
         }
     }
 
@@ -101,13 +113,17 @@ public class Image extends HttpServlet {
         RequestDispatcher rd = request.getRequestDispatcher("/userspics.jsp");
         request.setAttribute("Pics", lsPics);
         rd.forward(request, response);
-
     }
 
-    private void DisplayImage(int type,String Image, HttpServletResponse response) throws ServletException, IOException {
+    private void DisplayImage(String image, HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        RequestDispatcher rd = request.getRequestDispatcher("/userspic.jsp");
+        request.setAttribute("PicID", image);
+        rd.forward(request, response);
+    }
+    
+    private void DisplayImageData(int type, String Image, HttpServletResponse response) throws ServletException, IOException {
         PicModel tm = new PicModel();
         tm.setCluster(cluster);
-  
         
         Pic p = tm.getPic(type, java.util.UUID.fromString(Image));
         
@@ -115,7 +131,7 @@ public class Image extends HttpServlet {
 
         response.setContentType(p.getType());
         response.setContentLength(p.getLength());
-        //out.write(Image);
+        
         InputStream is = new ByteArrayInputStream(p.getBytes());
         BufferedInputStream input = new BufferedInputStream(is);
         byte[] buffer = new byte[8192];

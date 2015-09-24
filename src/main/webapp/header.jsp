@@ -11,7 +11,7 @@
         </header>
         <nav>
             <ul>
-                <li><a href="upload.jsp">Upload</a></li>
+                <li><a href="/Instagrim/upload.jsp">Upload</a></li>
                 <%
                         LoggedIn lg = (LoggedIn) session.getAttribute("LoggedIn");
                         if (lg != null) {
@@ -21,8 +21,8 @@
                 <%          }
                         } else {
                 %>
-                <li><a href="register.jsp">Register</a></li>
-                <li><a href="login.jsp">Login</a></li>
+                <li><a href="/Instagrim/register.jsp">Register</a></li>
+                <li><a href="/Instagrim/login.jsp">Login</a></li>
                 <%
                         }
                 %>
