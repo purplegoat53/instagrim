@@ -34,7 +34,8 @@ import uk.ac.dundee.computing.aec.instagrim.stores.Pic;
     "/Images",
     "/Images/*",
     "/Image",
-    "/Image/*"
+    "/Image/*",
+    "/Home"
 })
 @MultipartConfig
 
@@ -42,18 +43,12 @@ public class Image extends HttpServlet {
 
     private static final long serialVersionUID = 1L;
     private Cluster cluster;
-    private HashMap CommandsMap = new HashMap();
 
     /**
      * @see HttpServlet#HttpServlet()
      */
     public Image() {
         super();
-        // TODO Auto-generated constructor stub
-        CommandsMap.put("ImageData", 1);
-        CommandsMap.put("ThumbData", 2);
-        CommandsMap.put("Images", 3);
-        CommandsMap.put("Image", 4);
     }
 
     public void init(ServletConfig config) throws ServletException {
@@ -67,8 +62,10 @@ public class Image extends HttpServlet {
      */
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String args[] = Convertors.SplitRequestPath(request);
-        if(args.length <= 1)
+        if(args.length <= 1) {
             error("Not Enough Arguments", response);
+            return;
+        }
         
         String imageCommand = args[1];
         if(imageCommand.equals("ImageData"))
@@ -82,8 +79,23 @@ public class Image extends HttpServlet {
                 ManageImage(args[2], args[3], request, response);
             else
                 DisplayImage(args[2], request, response);
-        } else
+        } else if(imageCommand.equals("Home"))
+            GoHome(request, response);
+        else
             error("Bad Command", response);
+    }
+    
+    private void GoHome(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        RequestDispatcher rd;
+        
+        HttpSession session = request.getSession();
+        LoggedIn lg = (LoggedIn)session.getAttribute("LoggedIn");
+        if(lg == null || !lg.getLoginState())
+            rd = request.getRequestDispatcher("/");
+        else
+            rd = request.getRequestDispatcher("/Images/" + lg.getUsername());
+        
+        rd.forward(request, response);
     }
     
     private void ManageImage(String image, String operation, HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -92,18 +104,22 @@ public class Image extends HttpServlet {
         
         HttpSession session = request.getSession();
         LoggedIn lg = (LoggedIn)session.getAttribute("LoggedIn");
-        if(lg == null || !lg.getLoginState())
+        if(lg == null || !lg.getLoginState()) {
             error("Not Logged In", response);
+            return;
+        }
         
         String user = lg.getUsername();
         
         if(operation.equals("Delete")) {
             pm.removePic(java.util.UUID.fromString(image), user);
             //TODO: inform user on error
+            response.sendRedirect("/Instagrim/Home"); //FIX: crude
+            //RequestDispatcher rd = request.getRequestDispatcher("/userspics.jsp");
+            //rd.forward(request, response);
         }
-        if(operation.equals("test")) {
-            response.getWriter().write("YOLO");
-        }
+        
+        error("Invalid Operation", response);
     }
 
     private void DisplayImageList(String User, HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -142,6 +158,13 @@ public class Image extends HttpServlet {
     }
 
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        HttpSession session=request.getSession();
+        LoggedIn lg= (LoggedIn)session.getAttribute("LoggedIn");
+        if(lg == null) {
+            error("Not Logged In", response);
+            return;
+        }
+        
         for (Part part : request.getParts()) {
             System.out.println("Part Name " + part.getName());
 
@@ -150,8 +173,6 @@ public class Image extends HttpServlet {
             
             InputStream is = request.getPart(part.getName()).getInputStream();
             int i = is.available();
-            HttpSession session=request.getSession();
-            LoggedIn lg= (LoggedIn)session.getAttribute("LoggedIn");
             String username="majed";
             if (lg.getLoginState()){
                 username = lg.getUsername();

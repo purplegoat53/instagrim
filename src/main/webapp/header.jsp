@@ -17,7 +17,8 @@
                         if (lg != null) {
                             if (lg.getLoginState()) {
                 %>
-                <li><a href="/Instagrim/Images/<%=lg.getUsername()%>">Your Images</a></li>
+                <li><a href="/Instagrim/Home">Your Images</a></li>
+                <li><a href="/Instagrim/Logout">Logout</a></li>
                 <%          }
                         } else {
                 %>

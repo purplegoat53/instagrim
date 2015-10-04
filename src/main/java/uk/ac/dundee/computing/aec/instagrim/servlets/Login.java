@@ -18,6 +18,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import uk.ac.dundee.computing.aec.instagrim.lib.CassandraHosts;
+import uk.ac.dundee.computing.aec.instagrim.lib.Convertors;
 import uk.ac.dundee.computing.aec.instagrim.models.User;
 import uk.ac.dundee.computing.aec.instagrim.stores.LoggedIn;
 
@@ -25,7 +26,7 @@ import uk.ac.dundee.computing.aec.instagrim.stores.LoggedIn;
  *
  * @author Administrator
  */
-@WebServlet(name = "Login", urlPatterns = {"/Login"})
+@WebServlet(name = "Login", urlPatterns = {"/Login", "/Logout"})
 public class Login extends HttpServlet {
 
     Cluster cluster = null;
@@ -33,6 +34,23 @@ public class Login extends HttpServlet {
     public void init(ServletConfig config) throws ServletException {
         // TODO Auto-generated method stub
         cluster = CassandraHosts.getCluster();
+    }
+    
+    /**
+     * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse
+     * response)
+     */
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        String[] args = Convertors.SplitRequestPath(request);
+        if(args.length <= 1 || !args[1].equals("Logout")) {
+            response.sendError(404);
+            return;
+        }
+        
+        HttpSession session = request.getSession();
+        session.setAttribute("LoggedIn", null);
+        
+        response.sendRedirect("/Instagrim/");
     }
 
     /**
@@ -44,8 +62,12 @@ public class Login extends HttpServlet {
      * @throws IOException if an I/O error occurs
      */
     @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        String[] args = Convertors.SplitRequestPath(request);
+        if(args.length <= 1 || !args[1].equals("Login")) {
+            response.sendError(404);
+            return;
+        }
         
         String username = request.getParameter("username");
         String password = request.getParameter("password");
@@ -62,9 +84,10 @@ public class Login extends HttpServlet {
             //request.setAttribute("LoggedIn", lg);
             
             session.setAttribute("LoggedIn", lg);
-            System.out.println("Session in servlet "+session);
-            RequestDispatcher rd = request.getRequestDispatcher("index.jsp");
-	    rd.forward(request, response);
+            //System.out.println("Session in servlet "+session);
+            //RequestDispatcher rd = request.getRequestDispatcher("index.jsp");
+	    //rd.forward(request, response);
+            response.sendRedirect("/Instagrim/Home");
         } else {
             response.sendRedirect("/Instagrim/login.jsp");
         }
