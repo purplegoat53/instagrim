@@ -52,9 +52,10 @@ public class Register extends HttpServlet {
         
         User us = new User();
         us.setCluster(cluster);
-        us.RegisterUser(username, password);
-        
-	//response.sendRedirect("/Instagrim");
+        if(!us.RegisterUser(username, password)) {
+            response.sendError(501); //TODO: make better...
+            return;
+        }
         
         //TODO: check register succeeds, make sure duplicates arn't allowed
         
@@ -63,13 +64,10 @@ public class Register extends HttpServlet {
         LoggedIn lg = new LoggedIn();
         lg.setLoginState(true);
         lg.setUsername(username);
-        //request.setAttribute("LoggedIn", lg);
 
         HttpSession session = request.getSession();
         session.setAttribute("LoggedIn", lg);
-        System.out.println("Session in servlet "+session);
-        RequestDispatcher rd = request.getRequestDispatcher("index.jsp");
-        rd.forward(request, response);
+        response.sendRedirect("/Instagrim/Home");
     }
 
     /**

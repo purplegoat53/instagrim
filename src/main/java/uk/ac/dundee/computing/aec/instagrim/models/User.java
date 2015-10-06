@@ -27,25 +27,24 @@ public class User {
         
     }
     
-    public boolean RegisterUser(String username, String Password){
-        AeSimpleSHA1 sha1handler=  new AeSimpleSHA1();
-        String EncodedPassword=null;
+    public boolean RegisterUser(String username, String password) {
+        AeSimpleSHA1 sha1Handler = new AeSimpleSHA1();
+        String encodedPassword = null;
         try {
-            EncodedPassword= sha1handler.SHA1(Password);
-        }catch (UnsupportedEncodingException | NoSuchAlgorithmException et){
+            encodedPassword = sha1Handler.SHA1(password);
+        } catch (UnsupportedEncodingException | NoSuchAlgorithmException et){
             System.out.println("Can't check your password");
             return false;
         }
+        
         Session session = cluster.connect("instagrim");
-        PreparedStatement ps = session.prepare("insert into userprofiles (login,password) Values(?,?)");
+        // TODO: "if not exists" performance hit, better way?
+        PreparedStatement ps = session.prepare("insert into userprofiles (login, password) values(?, ?) if not exists");
        
         BoundStatement boundStatement = new BoundStatement(ps);
-        session.execute( // this is where the query is executed
-                boundStatement.bind( // here you are binding the 'boundStatement'
-                        username,EncodedPassword));
-        //We are assuming this always works.  Also a transaction would be good here !
+        ResultSet rs = session.execute(boundStatement.bind(username, encodedPassword));
         
-        return true;
+        return rs.one().getBool("[applied]");
     }
     
     public boolean IsValidUser(String username, String Password){
