@@ -23,16 +23,17 @@ import uk.ac.dundee.computing.aec.instagrim.stores.Pic;
  */
 public class User {
     Cluster cluster;
+    
     public User(){
         
     }
     
     public boolean RegisterUser(String username, String password) {
-        AeSimpleSHA1 sha1Handler = new AeSimpleSHA1();
         String encodedPassword = null;
+        
         try {
-            encodedPassword = sha1Handler.SHA1(password);
-        } catch (UnsupportedEncodingException | NoSuchAlgorithmException et){
+            encodedPassword = AeSimpleSHA1.SHA1(password);
+        } catch (UnsupportedEncodingException | NoSuchAlgorithmException et) {
             System.out.println("Can't check your password");
             return false;
         }
@@ -47,40 +48,36 @@ public class User {
         return rs.one().getBool("[applied]");
     }
     
-    public boolean IsValidUser(String username, String Password){
-        AeSimpleSHA1 sha1handler=  new AeSimpleSHA1();
-        String EncodedPassword=null;
+    public boolean IsValidUser(String username, String password) {
+        String encodedPassword = null;
+        
         try {
-            EncodedPassword= sha1handler.SHA1(Password);
-        }catch (UnsupportedEncodingException | NoSuchAlgorithmException et){
+            encodedPassword = AeSimpleSHA1.SHA1(password);
+        } catch (UnsupportedEncodingException | NoSuchAlgorithmException et) {
             System.out.println("Can't check your password");
             return false;
         }
+        
         Session session = cluster.connect("instagrim");
         PreparedStatement ps = session.prepare("select password from userprofiles where login =?");
-        ResultSet rs = null;
         BoundStatement boundStatement = new BoundStatement(ps);
-        rs = session.execute( // this is where the query is executed
-                boundStatement.bind( // here you are binding the 'boundStatement'
-                        username));
+        ResultSet rs = session.execute(boundStatement.bind(username));
+        
         if (rs.isExhausted()) {
             System.out.println("No Images returned");
             return false;
         } else {
-            for (Row row : rs) {
-               
+            for (Row row : rs) {       
                 String StoredPass = row.getString("password");
-                if (StoredPass.compareTo(EncodedPassword) == 0)
+                if (StoredPass.compareTo(encodedPassword) == 0)
                     return true;
             }
         }
-   
     
-    return false;  
-    }
-       public void setCluster(Cluster cluster) {
-        this.cluster = cluster;
+        return false;  
     }
 
-    
+    public void setCluster(Cluster cluster) {
+        this.cluster = cluster;
+    }
 }
