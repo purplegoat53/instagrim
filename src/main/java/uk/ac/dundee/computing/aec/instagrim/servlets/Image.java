@@ -8,6 +8,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.util.HashMap;
+import java.util.function.Function;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
@@ -54,6 +55,8 @@ public class Image extends HttpServlet {
     public void init(ServletConfig config) throws ServletException {
         // TODO Auto-generated method stub
         cluster = CassandraHosts.getCluster();
+        
+        
     }
 
     /**
@@ -67,14 +70,16 @@ public class Image extends HttpServlet {
             return;
         }
         
+        // FIX: make it less messy
+        
         String imageCommand = args[1];
-        if(imageCommand.equals("ImageData"))
+        if(imageCommand.equals("ImageData") && args.length <= 2) {
             DisplayImageData(Convertors.DISPLAY_PROCESSED, args[2], response);
-        else if(imageCommand.equals("ThumbData"))
+        } else if(imageCommand.equals("ThumbData") && args.length <= 2) {
             DisplayImageData(Convertors.DISPLAY_THUMB, args[2], response);
-        else if(imageCommand.equals("Images"))
+        } else if(imageCommand.equals("Images") && args.length <= 2)
             DisplayImageList(args[2], request, response);
-        else if(imageCommand.equals("Image")) {
+        else if(imageCommand.equals("Image") && args.length <= 2) {
             if(args.length > 3)
                 ManageImage(args[2], args[3], request, response);
             else
