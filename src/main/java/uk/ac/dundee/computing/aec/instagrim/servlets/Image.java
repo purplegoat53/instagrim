@@ -70,6 +70,7 @@ public class Image extends HttpServlet {
             return;
         }
         
+        // TODO: should have a page for public images
         // FIX: make it less messy
         
         String imageCommand = args[1];
