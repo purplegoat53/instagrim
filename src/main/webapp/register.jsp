@@ -16,6 +16,10 @@
         <%@include file="header.jsp"%>
         <main>
             <h3>Register as user</h3>
+            <% String msg = (String)request.getAttribute("Message");
+               if(msg != null) { %>
+            <p id="flash_message"><%= msg %></p>
+            <% } %>
             <form method="POST" action="Register">
                 <table>
                     <tr><td>Username</td><td><input type="text" name="username"></td></tr>

@@ -74,13 +74,13 @@ public class Image extends HttpServlet {
         // FIX: make it less messy
         
         String imageCommand = args[1];
-        if(imageCommand.equals("ImageData") && args.length <= 2) {
+        if(imageCommand.equals("ImageData") && args.length >= 3) {
             DisplayImageData(Convertors.DISPLAY_PROCESSED, args[2], response);
-        } else if(imageCommand.equals("ThumbData") && args.length <= 2) {
+        } else if(imageCommand.equals("ThumbData") && args.length >= 3) {
             DisplayImageData(Convertors.DISPLAY_THUMB, args[2], response);
-        } else if(imageCommand.equals("Images") && args.length <= 2)
+        } else if(imageCommand.equals("Images") && args.length >= 3)
             DisplayImageList(args[2], request, response);
-        else if(imageCommand.equals("Image") && args.length <= 2) {
+        else if(imageCommand.equals("Image") && args.length >= 3) {
             if(args.length > 3)
                 ManageImage(args[2], args[3], request, response);
             else
@@ -202,7 +202,7 @@ public class Image extends HttpServlet {
     private void error(String mess, HttpServletResponse response) throws ServletException, IOException {
         PrintWriter out = null;
         out = new PrintWriter(response.getOutputStream());
-        out.println("<h1>You have a na error in your input</h1>");
+        out.println("<h1>You have an error in your input</h1>");
         out.println("<h2>" + mess + "</h2>");
         out.close();
     }

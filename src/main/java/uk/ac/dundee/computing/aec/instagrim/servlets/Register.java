@@ -33,9 +33,6 @@ public class Register extends HttpServlet {
         cluster = CassandraHosts.getCluster();
     }
 
-
-
-
     /**
      * Handles the HTTP <code>POST</code> method.
      *
@@ -53,11 +50,11 @@ public class Register extends HttpServlet {
         User us = new User();
         us.setCluster(cluster);
         if(!us.RegisterUser(username, password)) {
-            response.sendError(501); //TODO: make better...
+            RequestDispatcher rd = request.getRequestDispatcher("/register.jsp");
+            request.setAttribute("Message", "User already exists");
+            rd.forward(request, response);
             return;
         }
-        
-        //TODO: check register succeeds, make sure duplicates arn't allowed
         
         //TODO: unify login code in register and login to single function
         

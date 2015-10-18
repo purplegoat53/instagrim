@@ -62,3 +62,9 @@ a {
 a:hover {
     color: black;
 }
+
+#flash_message {
+    padding: 10px;
+    background-color: #FF4D4D;
+    font-size: 12px;
+}

@@ -42,15 +42,17 @@ public class Login extends HttpServlet {
      */
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String[] args = Convertors.SplitRequestPath(request);
-        if(args.length <= 1 || !args[1].equals("Logout")) {
+        if(args.length <= 1) {
             response.sendError(404);
             return;
         }
         
-        HttpSession session = request.getSession();
-        session.setAttribute("LoggedIn", null);
+        if(args[1].equals("Logout")) {
+            HttpSession session = request.getSession();
+            session.setAttribute("LoggedIn", null);
         
-        response.sendRedirect("/Instagrim/");
+            response.sendRedirect("/Instagrim/");
+        }
     }
 
     /**
@@ -85,8 +87,13 @@ public class Login extends HttpServlet {
             session.setAttribute("LoggedIn", lg);
             response.sendRedirect("/Instagrim/Home");
         } else {
-            response.sendRedirect("/Instagrim/login.jsp");
+            RequestDispatcher rd = request.getRequestDispatcher("/login.jsp");
+            request.setAttribute("Message", "Invalid username or password");
+            rd.forward(request, response);
+            //response.sendRedirect("/Instagrim/login.jsp");
         }
+        
+        
     }
 
     /**
