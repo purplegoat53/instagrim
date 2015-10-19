@@ -68,3 +68,11 @@ a:hover {
     background-color: #FF4D4D;
     font-size: 12px;
 }
+
+img {
+    border: 1px solid black;
+}
+
+.thumbpics {
+    display: inline-block;
+}
