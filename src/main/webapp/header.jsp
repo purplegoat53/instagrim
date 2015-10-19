@@ -11,12 +11,12 @@
         </header>
         <nav>
             <ul>
-                <li><a href="/Instagrim/upload.jsp">Upload</a></li>
                 <%
                         LoggedIn lg = (LoggedIn) session.getAttribute("LoggedIn");
                         if (lg != null) {
                             if (lg.getLoginState()) {
                 %>
+                <li><a href="/Instagrim/upload.jsp">Upload</a></li>
                 <li><a href="/Instagrim/Home">Your Images</a></li>
                 <li><a href="/Instagrim/Logout">Logout</a></li>
                 <%          }

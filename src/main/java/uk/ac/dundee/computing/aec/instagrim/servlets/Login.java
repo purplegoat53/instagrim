@@ -90,10 +90,7 @@ public class Login extends HttpServlet {
             RequestDispatcher rd = request.getRequestDispatcher("/login.jsp");
             request.setAttribute("Message", "Invalid username or password");
             rd.forward(request, response);
-            //response.sendRedirect("/Instagrim/login.jsp");
         }
-        
-        
     }
 
     /**
