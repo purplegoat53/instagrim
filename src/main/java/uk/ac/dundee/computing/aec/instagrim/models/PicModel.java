@@ -50,7 +50,7 @@ public class PicModel {
         this.cluster = cluster;
     }
 
-    public void insertPic(byte[] rawData, String type, String name, String user) {
+    public void insertPic(byte[] rawData, String type, String name, String user, boolean isPublic) {
         String types[] = Convertors.SplitFiletype(type);
         java.util.UUID picID = Convertors.getTimeUUID();
 
@@ -63,14 +63,14 @@ public class PicModel {
         ByteBuffer processedBuf = ByteBuffer.wrap(processedData);
         
         try (Session session = cluster.connect("instagrim")) {
-            PreparedStatement psInsertPic = session.prepare("insert into pics (picid, image, thumb, processed, user, interaction_time, imagelength, thumblength, processedlength, type, name) values(?,?,?,?,?,?,?,?,?,?,?)");
+            PreparedStatement psInsertPic = session.prepare("insert into pics (picid, image, thumb, processed, user, interaction_time, imagelength, thumblength, processedlength, type, name, public) values(?,?,?,?,?,?,?,?,?,?,?,?)");
             PreparedStatement psInsertPicToUser = session.prepare("insert into userpiclist (picid, user, pic_added) values(?,?,?)");
             
             BoundStatement bsInsertPic = new BoundStatement(psInsertPic);
             BoundStatement bsInsertPicToUser = new BoundStatement(psInsertPicToUser);
             
             Date dateAdded = new Date();
-            session.execute(bsInsertPic.bind(picID, rawBuf, thumbBuf, processedBuf, user, dateAdded, rawData.length, thumbData.length, processedData.length, type, name));
+            session.execute(bsInsertPic.bind(picID, rawBuf, thumbBuf, processedBuf, user, dateAdded, rawData.length, thumbData.length, processedData.length, type, name, isPublic));
             session.execute(bsInsertPicToUser.bind(picID, user, dateAdded));
         }
     }
@@ -194,15 +194,17 @@ public class PicModel {
         try(Session session = cluster.connect("instagrim")) {
             ByteBuffer imageBuf = null;
             String type = null;
+            String user = null;
+            boolean isPublic = false;
             int length = 0;
             
             PreparedStatement ps = null;
             if (imageType == Convertors.DISPLAY_IMAGE) {
-                ps = session.prepare("select image, imagelength, type from pics where picid=?");
+                ps = session.prepare("select image, imagelength, type, user, public from pics where picid=?");
             } else if (imageType == Convertors.DISPLAY_THUMB) {
-                ps = session.prepare("select thumb, imagelength, thumblength, type from pics where picid=?");
+                ps = session.prepare("select thumb, imagelength, thumblength, type, user, public from pics where picid=?");
             } else if (imageType == Convertors.DISPLAY_PROCESSED) {
-                ps = session.prepare("select processed,processedlength,type from pics where picid=?");
+                ps = session.prepare("select processed, processedlength, type, user, public from pics where picid=?");
             }
 
             BoundStatement boundStatement = new BoundStatement(ps);
@@ -225,11 +227,15 @@ public class PicModel {
                     }
 
                     type = row.getString("type");
+                    user = row.getString("user");
+                    isPublic = row.getBool("public");
                 }
             }
             
             Pic pic = new Pic();
             pic.setPic(imageBuf, length, type);
+            pic.setUser(user);
+            pic.setPublic(isPublic);
             return pic;
         }
     }

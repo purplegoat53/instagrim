@@ -18,6 +18,7 @@
             <h3>File Upload</h3>
             <form method="POST" enctype="multipart/form-data" action="Image">
                 File to upload: <input type="file" name="upfile"><br>
+                Allow everyone to view: <input type="checkbox" name="public" value="1" checked><br>
                 <br>
                 <input type="submit" value="Upload">
             </form>

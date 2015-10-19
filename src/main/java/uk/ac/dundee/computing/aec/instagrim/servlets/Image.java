@@ -75,9 +75,9 @@ public class Image extends HttpServlet {
         
         String imageCommand = args[1];
         if(imageCommand.equals("ImageData") && args.length >= 3) {
-            DisplayImageData(Convertors.DISPLAY_PROCESSED, args[2], response);
+            DisplayImageData(Convertors.DISPLAY_PROCESSED, args[2], request, response);
         } else if(imageCommand.equals("ThumbData") && args.length >= 3) {
-            DisplayImageData(Convertors.DISPLAY_THUMB, args[2], response);
+            DisplayImageData(Convertors.DISPLAY_THUMB, args[2], request, response);
         } else if(imageCommand.equals("Images") && args.length >= 3)
             DisplayImageList(args[2], request, response);
         else if(imageCommand.equals("Image") && args.length >= 3) {
@@ -143,11 +143,18 @@ public class Image extends HttpServlet {
         rd.forward(request, response);
     }
     
-    private void DisplayImageData(int type, String Image, HttpServletResponse response) throws ServletException, IOException {
+    private void DisplayImageData(int type, String Image, HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         PicModel tm = new PicModel();
         tm.setCluster(cluster);
         
         Pic p = tm.getPic(type, java.util.UUID.fromString(Image));
+        
+        if(!p.isPublic()) {
+            HttpSession session = request.getSession();
+            LoggedIn lg = (LoggedIn)session.getAttribute("LoggedIn");
+            if(lg == null || !lg.getLoginState() || !lg.getUsername().equals(p.getUser()))
+                return;
+        }
         
         OutputStream out = response.getOutputStream();
 
@@ -164,37 +171,41 @@ public class Image extends HttpServlet {
     }
 
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        HttpSession session=request.getSession();
-        LoggedIn lg= (LoggedIn)session.getAttribute("LoggedIn");
+        HttpSession session = request.getSession();
+        LoggedIn lg = (LoggedIn)session.getAttribute("LoggedIn");
         if(lg == null) {
             error("Not Logged In", response);
             return;
         }
         
+        String isPublicStr = request.getParameter("public");
+        boolean isPublic = (isPublicStr != null && isPublicStr.equals("1"));
+        
         for (Part part : request.getParts()) {
-            System.out.println("Part Name " + part.getName());
-
             String type = part.getContentType();
             String filename = part.getSubmittedFileName();
             
             InputStream is = request.getPart(part.getName()).getInputStream();
             int i = is.available();
-            String username="majed";
+            String username = "majed"; //FIX: for some reason we're uploading to this guys account,
+                                        //     if we're not logged in
             if (lg.getLoginState()){
                 username = lg.getUsername();
             }
+            
             if (i > 0) {
                 byte[] b = new byte[i + 1];
                 is.read(b);
-                System.out.println("Length : " + b.length);
+                
                 PicModel tm = new PicModel();
                 tm.setCluster(cluster);
-                tm.insertPic(b, type, filename, username);
+                tm.insertPic(b, type, filename, username, isPublic);
 
                 is.close();
             }
+            
             RequestDispatcher rd = request.getRequestDispatcher("/upload.jsp");
-             rd.forward(request, response);
+            rd.forward(request, response);
         }
 
     }
