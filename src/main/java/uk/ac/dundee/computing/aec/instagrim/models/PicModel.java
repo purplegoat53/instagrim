@@ -18,6 +18,7 @@ import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
+import java.awt.Graphics;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -28,6 +29,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.util.Date;
+import javafx.scene.paint.Color;
 import javax.imageio.ImageIO;
 import static org.imgscalr.Scalr.*;
 import org.imgscalr.Scalr.Method;
@@ -138,9 +140,27 @@ public class PicModel {
         }
         return null;
     }
-
+    
+    public static final int THUMB_SIZE = 128;
+    
     public static BufferedImage createThumbnail(BufferedImage img) {
-        return resize(img, Method.SPEED, 250, OP_ANTIALIAS, OP_GRAYSCALE);
+        img = resize(img, Method.SPEED, THUMB_SIZE, OP_ANTIALIAS, OP_GRAYSCALE);
+        
+        // square the image and add black borders
+        
+        BufferedImage result = new BufferedImage(THUMB_SIZE, THUMB_SIZE, BufferedImage.TYPE_INT_RGB);
+        
+        Graphics g = result.getGraphics();
+        g.setColor(java.awt.Color.BLACK);
+        g.fillRect(0, 0, THUMB_SIZE, THUMB_SIZE);
+        
+        int x = (THUMB_SIZE / 2) - (img.getWidth() / 2);
+        int y = (THUMB_SIZE / 2) - (img.getHeight() / 2);
+        
+        g.drawImage(img, x, y, null);
+        g.dispose();
+        
+        return apply(result, OP_ANTIALIAS, OP_GRAYSCALE);
     }
     
     public static BufferedImage createProcessed(BufferedImage img) {
