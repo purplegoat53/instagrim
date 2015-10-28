@@ -51,12 +51,12 @@ public class PicModel {
     }
 
     public void insertPic(byte[] rawData, String type, String name, String user, boolean isPublic) {
-        String types[] = Convertors.SplitFiletype(type);
+        String[] types = Convertors.SplitFiletype(type);
         java.util.UUID picID = Convertors.getTimeUUID();
 
         ByteBuffer rawBuf = ByteBuffer.wrap(rawData);
         
-        byte [] thumbData = resizePic(rawData, types[1]);
+        byte[] thumbData = resizePic(rawData, types[1]);
         ByteBuffer thumbBuf = ByteBuffer.wrap(thumbData);
         
         byte[] processedData = decolourPic(rawData, types[1]);

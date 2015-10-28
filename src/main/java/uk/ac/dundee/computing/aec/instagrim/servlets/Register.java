@@ -49,7 +49,7 @@ public class Register extends HttpServlet {
         
         User us = new User();
         us.setCluster(cluster);
-        if(!us.RegisterUser(username, password)) {
+        if(!us.registerUser(username, password)) {
             RequestDispatcher rd = request.getRequestDispatcher("/register.jsp");
             request.setAttribute("Message", "User already exists");
             rd.forward(request, response);

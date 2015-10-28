@@ -22,6 +22,7 @@ import javax.servlet.http.Part;
 import uk.ac.dundee.computing.aec.instagrim.lib.CassandraHosts;
 import uk.ac.dundee.computing.aec.instagrim.lib.Convertors;
 import uk.ac.dundee.computing.aec.instagrim.models.PicModel;
+import uk.ac.dundee.computing.aec.instagrim.models.User;
 import uk.ac.dundee.computing.aec.instagrim.stores.LoggedIn;
 import uk.ac.dundee.computing.aec.instagrim.stores.Pic;
 
@@ -32,6 +33,7 @@ import uk.ac.dundee.computing.aec.instagrim.stores.Pic;
     "/ImageData",
     "/ImageData/*",
     "/ThumbData/*",
+    "/AvatarData/*",
     "/Images",
     "/Images/*",
     "/Image",
@@ -78,6 +80,8 @@ public class Image extends HttpServlet {
             DisplayImageData(Convertors.DISPLAY_PROCESSED, args[2], request, response);
         } else if(imageCommand.equals("ThumbData") && args.length >= 3) {
             DisplayImageData(Convertors.DISPLAY_THUMB, args[2], request, response);
+        } else if(imageCommand.equals("AvatarData") && args.length >= 3) {
+            DisplayAvatarData(args[2], request, response);
         } else if(imageCommand.equals("Images") && args.length >= 3)
             DisplayImageList(args[2], request, response);
         else if(imageCommand.equals("Image") && args.length >= 3) {
@@ -162,6 +166,34 @@ public class Image extends HttpServlet {
         response.setContentLength(p.getLength());
         
         InputStream is = new ByteArrayInputStream(p.getBytes());
+        BufferedInputStream input = new BufferedInputStream(is);
+        byte[] buffer = new byte[8192];
+        for (int length = 0; (length = input.read(buffer)) > 0;) {
+            out.write(buffer, 0, length);
+        }
+        out.close();
+    }
+    
+    
+    private void DisplayAvatarData(String user, HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        User um = new User();
+        um.setCluster(cluster);
+        
+        Pic avatar = um.getAvatar(user);
+        
+        if(avatar == null)
+        {
+            RequestDispatcher rd = request.getRequestDispatcher("/noavatar.png");
+            rd.forward(request, response);
+            return;
+        }
+        
+        OutputStream out = response.getOutputStream();
+
+        response.setContentType(avatar.getType());
+        response.setContentLength(avatar.getLength());
+        
+        InputStream is = new ByteArrayInputStream(avatar.getBytes());
         BufferedInputStream input = new BufferedInputStream(is);
         byte[] buffer = new byte[8192];
         for (int length = 0; (length = input.read(buffer)) > 0;) {

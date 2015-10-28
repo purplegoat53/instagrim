@@ -76,3 +76,7 @@ img {
 .thumbpics {
     display: inline-block;
 }
+
+.avatar {
+    width: 120px;
+}

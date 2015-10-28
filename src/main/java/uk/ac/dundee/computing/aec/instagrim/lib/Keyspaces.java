@@ -40,15 +40,18 @@ public final class Keyspaces {
             String CreateAddressType = "CREATE TYPE if not exists instagrim.address (\n"
                     + "      street text,\n"
                     + "      city text,\n"
-                    + "      zip int\n"
+                    + "      zip text\n"
                     + "  );";
             String CreateUserProfile = "CREATE TABLE if not exists instagrim.userprofiles (\n"
                     + "      login text PRIMARY KEY,\n"
-                     + "     password text,\n"
+                    + "      password text,\n"
                     + "      first_name text,\n"
                     + "      last_name text,\n"
-                    + "      email set<text>,\n"
-                    + "      addresses  map<text, frozen <address>>,\n"
+                    + "      email text,\n"
+                    + "      addresses map<text, frozen <address>>,\n"
+                    + "      avatar blob,\n"
+                    + "      avatarlength int,\n"
+                    + "      avatartype text,\n"
                     + "      privacy int,\n" // privacy - 0 = profile and picture list viewable by all,
                                              //           1 = only picture list viewable by all,
                                              //           2 = profile and picture list are private

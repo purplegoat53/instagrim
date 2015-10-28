@@ -13,9 +13,11 @@ import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
 import java.io.UnsupportedEncodingException;
+import java.nio.ByteBuffer;
 import java.security.NoSuchAlgorithmException;
 import uk.ac.dundee.computing.aec.instagrim.lib.AeSimpleSHA1;
 import uk.ac.dundee.computing.aec.instagrim.stores.Pic;
+import uk.ac.dundee.computing.aec.instagrim.stores.ProfileData;
 
 /**
  *
@@ -24,11 +26,11 @@ import uk.ac.dundee.computing.aec.instagrim.stores.Pic;
 public class User {
     Cluster cluster;
     
-    public User(){
+    public User() {
         
     }
     
-    public boolean RegisterUser(String username, String password) {
+    public boolean registerUser(String username, String password) {
         String encodedPassword = null;
         
         try {
@@ -48,7 +50,7 @@ public class User {
         return rs.one().getBool("[applied]");
     }
     
-    public boolean IsValidUser(String username, String password) {
+    public boolean isValidUser(String username, String password) {
         String encodedPassword = null;
         
         try {
@@ -64,7 +66,6 @@ public class User {
         ResultSet rs = session.execute(boundStatement.bind(username));
         
         if (rs.isExhausted()) {
-            System.out.println("No Images returned");
             return false;
         } else {
             for (Row row : rs) {       
@@ -75,6 +76,61 @@ public class User {
         }
     
         return false;  
+    }
+    
+    public void setAvatar(String username, byte[] rawData, String contentType) {
+        try (Session session = cluster.connect("instagrim")) {
+            ByteBuffer rawBuf = ByteBuffer.wrap(rawData);
+                    
+            PreparedStatement psSetAvatar = session.prepare("update userprofiles set avatar=?, avatarlength=?, avatartype=? where login=?");
+            BoundStatement bsSetAvatar = new BoundStatement(psSetAvatar);
+            session.execute(bsSetAvatar.bind(rawBuf, rawData.length, contentType, username));
+        }
+    }
+    
+    public Pic getAvatar(String username) {
+        Session session = cluster.connect("instagrim");
+        PreparedStatement ps = session.prepare("select avatar, avatarlength, avatartype from userprofiles where login=?");
+        BoundStatement boundStatement = new BoundStatement(ps);
+        ResultSet rs = session.execute(boundStatement.bind(username));
+        
+        if(rs.isExhausted())
+            return null;
+        
+        Row row = rs.one();
+        ByteBuffer bb = row.getBytes("avatar");
+        if(bb == null)
+            return null;
+        
+        Pic pic = new Pic();
+        pic.setPic(bb, row.getInt("avatarlength"), row.getString("avatartype"));
+        return pic;
+    }
+    
+    public void setBasicInfo(String username, String firstName, String lastName, String email) {
+        try (Session session = cluster.connect("instagrim")) {
+            PreparedStatement psSetBasic = session.prepare("update userprofiles set first_name=?, last_name=?, email=? where login=?");
+            BoundStatement bsSetBasic = new BoundStatement(psSetBasic);
+            session.execute(bsSetBasic.bind(firstName, lastName, email, username));
+        }
+    }
+    
+    public ProfileData getBasicInfo(String username) {
+        try (Session session = cluster.connect("instagrim")) {
+            PreparedStatement psGetBasic = session.prepare("select first_name=?, last_name=?, email=? from userprofiles where login=?");
+            BoundStatement bsGetBasic = new BoundStatement(psGetBasic);
+            ResultSet rs = session.execute(bsGetBasic.bind(username));
+            
+            if(rs.isExhausted())
+                return null;
+            
+            Row row = rs.one();
+            ProfileData profile = new ProfileData();
+            profile.setFirstName(row.getString("first_name"));
+            profile.setLastName(row.getString("last_name"));
+            profile.setEmail(row.getString("email"));
+            return profile;
+        }
     }
 
     public void setCluster(Cluster cluster) {
