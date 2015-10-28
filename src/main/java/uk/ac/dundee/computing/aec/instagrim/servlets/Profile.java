@@ -137,6 +137,13 @@ public class Profile extends HttpServlet {
             if(email == null) email = "";
             
             um.setBasicInfo(username, firstName, lastName, email);
+        } else if(submitStr.equals("Update Privacy Settings")) {
+            String privacyStr = request.getParameter("privacy");
+            if(privacyStr == null)
+                return;
+            
+            int privacy = Integer.parseInt(privacyStr);
+            um.setPrivacy(username, privacy);
         }
         
         RequestDispatcher rd = request.getRequestDispatcher("/profile.jsp");

@@ -29,9 +29,9 @@
                 </tr>
             </table>
             <br>
+            <% ProfileData profile = (ProfileData)request.getAttribute("ProfileData"); %>
             <b>Basic Information</b>
             <table>
-                <% ProfileData profile = (ProfileData)request.getAttribute("ProfileData"); %>
                 <form method="POST" enctype="multipart/form-data" action="Profile">
                     <tr><td>Forename</td><td><input type="text" name="first_name" value="<%= profile.getFirstName() %>"></td></tr>
                     <tr><td>Surname</td><td><input type="text" name="last_name" value="<%= profile.getLastName() %>"></td></tr>
@@ -52,9 +52,9 @@
                         <td>Privacy Setting</td>
                         <td>
                             <select>
-                                <option value="profile_picture">Picture List and Profile Public</option>
-                                <option value="picture">Only Picture List Public</option>
-                                <option value="none">Everything Private</option>
+                                <option name="privacy" value="0" <%= (profile.getPrivacy() == 0 ? "selected" : "") %>>Picture List and Profile Public</option>
+                                <option name="privacy" value="1" <%= (profile.getPrivacy() == 1 ? "selected" : "") %>>Only Picture List Public</option>
+                                <option name="privacy" value="2" <%= (profile.getPrivacy() == 2 ? "selected" : "") %>>Everything Private</option>
                             </select>
                         </td>
                     </tr>

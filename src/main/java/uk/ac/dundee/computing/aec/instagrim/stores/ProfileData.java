@@ -15,6 +15,7 @@ public class ProfileData {
     String firstName;
     String lastName;
     String email;
+    int privacy;
     
     public void ProfileData(){
         
@@ -42,5 +43,13 @@ public class ProfileData {
     
     public String getEmail(){
         return this.email;
+    }
+    
+    public void setPrivacy(int privacy){
+        this.privacy = privacy;
+    }
+    
+    public int getPrivacy(){
+        return this.privacy;
     }
 }

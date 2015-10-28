@@ -117,7 +117,7 @@ public class User {
     
     public ProfileData getBasicInfo(String username) {
         try (Session session = cluster.connect("instagrim")) {
-            PreparedStatement psGetBasic = session.prepare("select first_name=?, last_name=?, email=? from userprofiles where login=?");
+            PreparedStatement psGetBasic = session.prepare("select first_name, last_name, email, privacy from userprofiles where login=?");
             BoundStatement bsGetBasic = new BoundStatement(psGetBasic);
             ResultSet rs = session.execute(bsGetBasic.bind(username));
             
@@ -129,7 +129,17 @@ public class User {
             profile.setFirstName(row.getString("first_name"));
             profile.setLastName(row.getString("last_name"));
             profile.setEmail(row.getString("email"));
+            profile.setPrivacy(row.getInt("privacy"));
             return profile;
+        }
+    }
+    
+    public void setPrivacy(String username, int privacy)
+    {
+        try (Session session = cluster.connect("instagrim")) {
+            PreparedStatement psSetPrivacy = session.prepare("update userprofiles set privacy=? where login=?");
+            BoundStatement bsSetPrivacy = new BoundStatement(psSetPrivacy);
+            session.execute(bsSetPrivacy.bind(privacy, username));
         }
     }
 
