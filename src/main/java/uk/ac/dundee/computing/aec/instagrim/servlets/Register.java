@@ -47,6 +47,19 @@ public class Register extends HttpServlet {
         String username = request.getParameter("username");
         String password = request.getParameter("password");
         
+        boolean badChars = false;
+        for(int i=0;i<username.length();i++) {
+            char c = username.charAt(i);
+            if(!(c >= '0' && c <= '9') && !(c >= 'a' && c <= 'z') && !(c >= 'A' && c <= 'Z'))
+                badChars = true;
+        }
+        if(badChars) {
+            RequestDispatcher rd = request.getRequestDispatcher("/register.jsp");
+            request.setAttribute("Message", "Username can only contain upper and lower case characters and numbers");
+            rd.forward(request, response);
+            return;
+        }
+        
         User us = new User();
         us.setCluster(cluster);
         if(!us.registerUser(username, password)) {

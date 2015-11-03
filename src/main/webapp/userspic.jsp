@@ -4,6 +4,7 @@
     Author     : owner
 --%>
 
+<%@page import="uk.ac.dundee.computing.aec.instagrim.lib.Convertors"%>
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <!DOCTYPE html>
 <html>
@@ -27,6 +28,8 @@
                     Allow everyone to view: <input type="checkbox" name="public" value="1" <%= pic.isPublic() ? "checked" : "" %>>
                     <input type="submit" value="Update Privacy">
                 </form>
+                <%     } else { %>
+                <a href="/Instagrim/Profile/<%= Convertors.Escape(pic.getUser()) %>"><%= Convertors.Escape(pic.getUser()) %></a><br>
                 <%     } %>
             </p>
             <%     } else { %>

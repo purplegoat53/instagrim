@@ -65,14 +65,17 @@ public class PicModel {
         java.util.UUID picID = Convertors.getTimeUUID();
 
         ByteBuffer rawBuf = ByteBuffer.wrap(rawData);
-        
+
+        //process pic, resize to thumbnail
         byte[] thumbData = resizePic(rawData, types[1]);
         ByteBuffer thumbBuf = ByteBuffer.wrap(thumbData);
         
+        //process pic, add filter
         byte[] processedData = decolourPic(rawData, types[1]);
         ByteBuffer processedBuf = ByteBuffer.wrap(processedData);
         
         try (Session session = cluster.connect("instagrim")) {
+            //insert pic into db and pic list
             PreparedStatement psInsertPic = session.prepare("insert into pics (picid, image, thumb, processed, user, interaction_time, imagelength, thumblength, processedlength, type, name, public) values(?,?,?,?,?,?,?,?,?,?,?,?)");
             PreparedStatement psInsertPicToUser = session.prepare("insert into userpiclist (picid, user, pic_added) values(?,?,?)");
             
@@ -177,6 +180,7 @@ public class PicModel {
         int width = img.getWidth()-1;
         return resize(img, Method.SPEED, width, OP_ANTIALIAS, OP_GRAYSCALE);
     }
+    
     
     public java.util.LinkedList<Pic> getPublicPics() {
         try(Session session = cluster.connect("instagrim")) {
