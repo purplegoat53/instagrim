@@ -34,8 +34,6 @@ import uk.ac.dundee.computing.aec.instagrim.stores.Pic;
     "/ImageData/*",
     "/ThumbData/*",
     "/AvatarData/*",
-    "/Images",
-    "/Images/*",
     "/Image",
     "/Image/*",
     "/Home"
@@ -103,7 +101,7 @@ public class Image extends HttpServlet {
         if(lg == null || !lg.getLoginState())
             rd = request.getRequestDispatcher("/");
         else
-            rd = request.getRequestDispatcher("/Images/" + lg.getUsername());
+            rd = request.getRequestDispatcher("/Profile");
         
         rd.forward(request, response);
     }
@@ -127,6 +125,13 @@ public class Image extends HttpServlet {
             response.sendRedirect("/Instagrim/Home"); //FIX: crude
             //RequestDispatcher rd = request.getRequestDispatcher("/userspics.jsp");
             //rd.forward(request, response);
+        } else if(operation.equals("UpdatePrivacy")) {
+            String isPublicStr = request.getParameter("public");
+            boolean isPublic = (isPublicStr != null && isPublicStr.equals("1"));
+            
+            pm.updatePrivacy(java.util.UUID.fromString(image), isPublic);
+            
+            response.sendRedirect("/Instagrim/Image/" + image);
         }
         
         error("Invalid Operation", response);
@@ -142,8 +147,13 @@ public class Image extends HttpServlet {
     }
 
     private void DisplayImage(String image, HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        PicModel tm = new PicModel();
+        tm.setCluster(cluster);
+        
+        Pic p = tm.getPic(Convertors.DISPLAY_IMAGE, java.util.UUID.fromString(image));
+        
         RequestDispatcher rd = request.getRequestDispatcher("/userspic.jsp");
-        request.setAttribute("PicID", image);
+        request.setAttribute("Pic", p);
         rd.forward(request, response);
     }
     
@@ -152,6 +162,8 @@ public class Image extends HttpServlet {
         tm.setCluster(cluster);
         
         Pic p = tm.getPic(type, java.util.UUID.fromString(Image));
+        if(p == null)
+            return;
         
         if(!p.isPublic()) {
             HttpSession session = request.getSession();

@@ -21,16 +21,18 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.servlet.http.Part;
 import uk.ac.dundee.computing.aec.instagrim.lib.CassandraHosts;
+import uk.ac.dundee.computing.aec.instagrim.lib.Convertors;
 import uk.ac.dundee.computing.aec.instagrim.models.PicModel;
 import uk.ac.dundee.computing.aec.instagrim.models.User;
 import uk.ac.dundee.computing.aec.instagrim.stores.LoggedIn;
+import uk.ac.dundee.computing.aec.instagrim.stores.Pic;
 import uk.ac.dundee.computing.aec.instagrim.stores.ProfileData;
 
 /**
  *
  * @author owner
  */
-@WebServlet(name = "Profile", urlPatterns = {"/Settings"})
+@WebServlet(name = "profile", urlPatterns = {"/Profile", "/Profile/*", "/Images/*"})
 @MultipartConfig
 
 public class Profile extends HttpServlet {
@@ -61,18 +63,36 @@ public class Profile extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         
-        HttpSession session = request.getSession();
-        LoggedIn lg = (LoggedIn)session.getAttribute("LoggedIn");
-        if(lg == null || !lg.getLoginState())
-            return;
-        
-        User user = new User();
-        user.setCluster(cluster);
-        ProfileData profile = user.getBasicInfo(lg.getUsername());
-        
-        request.setAttribute("ProfileData", profile);
+        PicModel pm = new PicModel();
+        pm.setCluster(cluster);
         
         RequestDispatcher rd = request.getRequestDispatcher("/profile.jsp");
+        
+        String user = null;
+        String args[] = Convertors.SplitRequestPath(request);
+        if(args.length < 2) {
+            return;
+        } else if(args.length == 2) {
+            HttpSession session = request.getSession();
+            LoggedIn lg = (LoggedIn)session.getAttribute("LoggedIn");
+            if(lg == null || !lg.getLoginState())
+                return;
+            
+            user = lg.getUsername();
+            request.setAttribute("IsUser", true);
+        } else if(args.length >= 3) {
+            user = args[2];
+            request.setAttribute("IsUser", false);
+        }
+        
+        User um = new User();
+        um.setCluster(cluster);
+        ProfileData profile = um.getBasicInfo(user);
+        request.setAttribute("ProfileData", profile);
+        request.setAttribute("User", user);
+        
+        java.util.LinkedList<Pic> lsPics = pm.getPicsForUser(user);
+        request.setAttribute("Pics", lsPics);
         rd.forward(request, response);
     }
 
@@ -84,71 +104,9 @@ public class Profile extends HttpServlet {
      * @throws ServletException if a servlet-specific error occurs
      * @throws IOException if an I/O error occurs
      */
-    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+    /*protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        
-        HttpSession session = request.getSession();
-        LoggedIn lg = (LoggedIn)session.getAttribute("LoggedIn");
-        if(lg == null || !lg.getLoginState()) {
-            //error("Not Logged In", response);
-            return;
-        }
-        
-        String username = lg.getUsername();       
-        
-        String submitStr = request.getParameter("submit");
-        if(submitStr == null)
-        {
-            RequestDispatcher rd = request.getRequestDispatcher("/profile.jsp");
-            rd.forward(request, response);
-            return;
-        }
-
-        User um = new User();
-        um.setCluster(cluster);
-        
-        if(submitStr.equals("Upload Avatar")) {
-            for (Part part : request.getParts()) {
-                if(!part.getName().equals("upfile"))
-                    continue;
-                
-                String type = part.getContentType();
-
-                InputStream is = request.getPart(part.getName()).getInputStream();
-                int size = is.available();
-
-                if (size > 0) {
-                    byte[] b = new byte[size + 1];
-                    is.read(b);
-
-                    um.setAvatar(username, b, type);
-
-                    is.close();
-                }
-            }
-        } else if(submitStr.equals("Update Profile")) {
-            String firstName = request.getParameter("first_name");
-            if(firstName == null) firstName = "";
-            
-            String lastName = request.getParameter("last_name");
-            if(lastName == null) lastName = "";
-            
-            String email = request.getParameter("email");
-            if(email == null) email = "";
-            
-            um.setBasicInfo(username, firstName, lastName, email);
-        } else if(submitStr.equals("Update Privacy Settings")) {
-            String privacyStr = request.getParameter("privacy");
-            if(privacyStr == null)
-                return;
-            
-            int privacy = Integer.parseInt(privacyStr);
-            um.setPrivacy(username, privacy);
-        }
-        
-        RequestDispatcher rd = request.getRequestDispatcher("/profile.jsp");
-        rd.forward(request, response);
-    }
+    }*/
 
     /**
      * Returns a short description of the servlet.

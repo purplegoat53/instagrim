@@ -52,7 +52,7 @@ public final class Keyspaces {
                     + "      avatar blob,\n"
                     + "      avatarlength int,\n"
                     + "      avatartype text,\n"
-                    + "      privacy int,\n" // privacy - 0 = profile and picture list viewable by all,
+                    + "      privacy int\n" // privacy - 0 = profile and picture list viewable by all,
                                              //           1 = only picture list viewable by all,
                                              //           2 = profile and picture list are private
                     + "  );";

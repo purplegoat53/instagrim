@@ -20,7 +20,7 @@
                if(msg != null) { %>
             <p id="flash_message"><%= msg %></p>
             <% } %>
-            <form method="POST" action="Login">
+            <form method="POST" action="/Instagrim/Login">
                 <table>
                     <tr><td>Username</td><td><input type="text" name="username"></td></tr>
                     <tr><td>Password</td><td><input type="password" name="password"></td></tr>

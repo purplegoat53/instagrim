@@ -17,7 +17,8 @@
                             if (lg.getLoginState()) {
                 %>
                 <li><a href="/Instagrim/upload.jsp">Upload</a></li>
-                <li><a href="/Instagrim/Home">Your Images</a></li>
+                <li><a href="/Instagrim/Home">Profile</a></li>
+                <li><a href="/Instagrim/Settings">Settings</a></li>
                 <li><a href="/Instagrim/Logout">Logout</a></li>
                 <%          }
                         } else {

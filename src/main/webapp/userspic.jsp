@@ -14,10 +14,27 @@
     </head>
     <body>
         <%@include file="header.jsp"%>
-        <% String picid = (String)request.getAttribute("PicID"); %>
+        <% Pic pic = (Pic)request.getAttribute("Pic"); %>
         <main>
-            <img src="/Instagrim/ImageData/<%= picid %>" width=100%><br>
-            <a href="/Instagrim/Image/<%= picid %>/Delete">Delete</a> ...
+            <% if(pic != null) { 
+                   boolean isOwner = (lg != null && lg.getUsername().equals(pic.getUser()));
+                   if(pic.isPublic() || isOwner) { %>
+            <img src="/Instagrim/ImageData/<%= pic.getSUUID() %>" width=100%>
+            <p>
+                <%     if(isOwner) { %>
+                <a href="/Instagrim/Image/<%= pic.getSUUID() %>/Delete">Delete</a><br>
+                <form method="GET" action="/Instagrim/Image/<%= pic.getSUUID() %>/UpdatePrivacy">
+                    Allow everyone to view: <input type="checkbox" name="public" value="1" <%= pic.isPublic() ? "checked" : "" %>>
+                    <input type="submit" value="Update Privacy">
+                </form>
+                <%     } %>
+            </p>
+            <%     } else { %>
+            <p>Picture not public</p>
+            <%     } %>
+            <% } else { %>
+            <p>Picture not found</p>
+            <% } %>
         </main>
         <%@include file="footer.jsp"%>
     </body>

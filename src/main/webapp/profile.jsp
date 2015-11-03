@@ -1,10 +1,13 @@
 <%-- 
-    Document   : profile
-    Created on : 22-Sep-2015, 17:30:03
-    Author     : owner
+    Document   : Profile
+    Created on : Sep 24, 2014, 2:52:48 PM
+    Author     : Administrator
 --%>
 
-<%@page contentType="text/html" pageEncoding="UTF-8"%>
+<%@page import="java.util.*" %>
+<%@page contentType="text/html" pageEncoding="UTF-8" %>
+<%@page import="uk.ac.dundee.computing.aec.instagrim.stores.*" %>
+<%@page import="uk.ac.dundee.computing.aec.instagrim.lib.Convertors" %>
 <!DOCTYPE html>
 <html>
     <head>
@@ -15,57 +18,38 @@
     <body>
         <%@include file="header.jsp"%>
         <main>
-            <h3>Profile</h3>
-            <b>Avatar</b>
-            <table>
-                <tr>
-                    <form method="POST" enctype="multipart/form-data" action="Profile">
-                        <td><img class="avatar" src="/Instagrim/AvatarData/<%= lg.getUsername() %>"></td>
-                        <td>
-                            <input type="file" name="upfile"><br>
-                            <input type="submit" name="submit" value="Upload Avatar">
-                        </td>
-                    </form>
-                </tr>
-            </table>
-            <br>
-            <% ProfileData profile = (ProfileData)request.getAttribute("ProfileData"); %>
-            <b>Basic Information</b>
-            <table>
-                <form method="POST" enctype="multipart/form-data" action="Profile">
-                    <tr><td>Forename</td><td><input type="text" name="first_name" value="<%= profile.getFirstName() %>"></td></tr>
-                    <tr><td>Surname</td><td><input type="text" name="last_name" value="<%= profile.getLastName() %>"></td></tr>
-                    <tr><td>Email</td><td><input type="text" name="email" value="<%= profile.getEmail() %>"></td></tr>
-                    <tr>
-                        <td/>
-                        <td>
-                            <input type="submit" name="submit" value="Update Profile">
-                        </td>
-                    </tr>
-                </form>
-            </table>
-            <br>
-            <b>Privacy</b>
-            <table>
-                <form method="POST" enctype="multipart/form-data" action="Profile">
-                    <tr>
-                        <td>Privacy Setting</td>
-                        <td>
-                            <select>
-                                <option name="privacy" value="0" <%= (profile.getPrivacy() == 0 ? "selected" : "") %>>Picture List and Profile Public</option>
-                                <option name="privacy" value="1" <%= (profile.getPrivacy() == 1 ? "selected" : "") %>>Only Picture List Public</option>
-                                <option name="privacy" value="2" <%= (profile.getPrivacy() == 2 ? "selected" : "") %>>Everything Private</option>
-                            </select>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td/>
-                        <td>
-                            <input type="submit" name="submit" value="Update Privacy Settings">
-                        </td>
-                    </tr>
-                </form>
-            </table>
+            <%  ProfileData profile = (ProfileData)request.getAttribute("ProfileData");
+                if(profile != null) {
+                    boolean isUser = (boolean)request.getAttribute("IsUser");
+                    if(profile.getPrivacy() == 0 || isUser) {
+                        String name = (profile.getFirstName().length() <= 0 ? (String)request.getAttribute("User") : profile.getFirstName());
+                        if(isUser == true) { %>
+            <h2 class="profile_name"><p><img class="avatar" src="/Instagrim/AvatarData/<%= lg.getUsername() %>">Hi, <%= Convertors.Escape(name) %></p></h2>
+            <%          } else { %>
+            <h2 class="profile_name"><p><img class="avatar" src="/Instagrim/AvatarData/<%= lg.getUsername() %>"><%= Convertors.Escape(name) %></p></h2>
+            <%          }
+                    
+                        java.util.LinkedList<Pic> lsPics = (java.util.LinkedList<Pic>)request.getAttribute("Pics");
+                        if (lsPics == null) {
+            %>
+            <p>No pictures found</p>
+            <%
+                        } else {
+                            Iterator<Pic> iterator;
+                            iterator = lsPics.iterator();
+                            while (iterator.hasNext()) {
+                                Pic p = (Pic) iterator.next();
+            %>
+            <a href="/Instagrim/Image/<%=p.getSUUID()%>"><img src="/Instagrim/ThumbData/<%=p.getSUUID()%>" class="thumbpics"></a>
+            <%              }
+                        }
+                    } else { %>
+            <p>Profile private</p>
+            <%      }
+                } else { %>
+            <p>No such user</p>
+            <%  }
+            %>
         </main>
         <%@include file="footer.jsp"%>
     </body>

@@ -80,3 +80,15 @@ img {
 .avatar {
     width: 120px;
 }
+
+.profile_name img {
+    height: 32px;
+    width: auto;
+    vertical-align: middle;
+    margin: 10px;
+}
+
+.profile_name {
+    margin: 0px;
+    padding: 0px;
+}

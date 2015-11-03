@@ -29,6 +29,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.util.Date;
+import java.util.HashMap;
 import javafx.scene.paint.Color;
 import javax.imageio.ImageIO;
 import static org.imgscalr.Scalr.*;
@@ -48,6 +49,15 @@ public class PicModel {
 
     public void setCluster(Cluster cluster) {
         this.cluster = cluster;
+    }
+    
+    public void updatePrivacy(java.util.UUID picid, boolean isPublic) {
+        try (Session session = cluster.connect("instagrim")) {
+            PreparedStatement psUpdatePic = session.prepare("update pics set public=? where picid=?");
+            BoundStatement bsUpdatePic = new BoundStatement(psUpdatePic);
+            
+            session.execute(bsUpdatePic.bind(isPublic, picid));
+        }
     }
 
     public void insertPic(byte[] rawData, String type, String name, String user, boolean isPublic) {
@@ -167,6 +177,27 @@ public class PicModel {
         int width = img.getWidth()-1;
         return resize(img, Method.SPEED, width, OP_ANTIALIAS, OP_GRAYSCALE);
     }
+    
+    public java.util.LinkedList<Pic> getPublicPics() {
+        try(Session session = cluster.connect("instagrim")) {
+            java.util.LinkedList<Pic> pics = new java.util.LinkedList<>();
+            
+            PreparedStatement ps = session.prepare("select picid, public from pics");
+            BoundStatement bs = new BoundStatement(ps);
+            ResultSet rs = session.execute(bs.bind());
+
+            for (Row row : rs) {
+                if(!row.getBool("public"))
+                    continue;
+                
+                Pic pic = new Pic();
+                pic.setUUID(row.getUUID("picid"));
+                pics.add(pic);
+            }
+
+            return pics;
+        }
+    }
    
     public java.util.LinkedList<Pic> getPicsForUser(String user) {
         try(Session session = cluster.connect("instagrim")) {
@@ -233,6 +264,7 @@ public class PicModel {
             }
             
             Pic pic = new Pic();
+            pic.setUUID(picID);
             pic.setPic(imageBuf, length, type);
             pic.setUser(user);
             pic.setPublic(isPublic);

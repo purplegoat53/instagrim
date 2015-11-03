@@ -125,10 +125,17 @@ public class User {
                 return null;
             
             Row row = rs.one();
+            String firstName = row.getString("first_name");
+            if(firstName == null) firstName = "";
+            String lastName = row.getString("last_name");
+            if(lastName == null) lastName = "";
+            String email = row.getString("email");
+            if(email == null) email = "";
+            
             ProfileData profile = new ProfileData();
-            profile.setFirstName(row.getString("first_name"));
-            profile.setLastName(row.getString("last_name"));
-            profile.setEmail(row.getString("email"));
+            profile.setFirstName(firstName);
+            profile.setLastName(lastName);
+            profile.setEmail(email);
             profile.setPrivacy(row.getInt("privacy"));
             return profile;
         }
